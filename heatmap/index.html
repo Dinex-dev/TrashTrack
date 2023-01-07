@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <title>Heatmap</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="keywords" content="">
+  <link rel="stylesheet" href="files/commons.css">
+
+  <link rel="stylesheet" href="files/leaflet.css">
+  <script src="files/leaflet.js"></script>
+
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <div style="height: 100vh;width: 100vw;">
+      <div class="heatmap leaflet-container leaflet-fade-anim" id="map-canvas" tabindex="0">
+        <canvas class="heatmap-canvas" style="width:'100vw'; height:'100vh'"></canvas>
+      </div>
+    </div>
+  </div>
+  <script src="files/heatmap.js"></script>
+  <script src="files/leaflet-heatmap.js"></script>
+  <script>
+    window.onload = async function () {
+      const testData = {
+        
+        data: await fetch("https://data.mongodb-api.com/app/triggers-oiqrx/endpoint/trashLocation").then(res => res.json().then(data => data))
+      };
+      console.log(testData.data)
+
+      const baseLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+        maxZoom: 18
+      }
+      );
+
+      const cfg = {
+        // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+        "radius": 0.0005 ,
+        "maxOpacity": .8,
+        // scales the radius based on map zoom
+        "scaleRadius": true,
+        // if set to false the heatmap uses the global maximum for colorization
+        // if activated: uses the data maximum within the current map boundaries
+        //   (there will always be a red spot with useLocalExtremas true)
+        "useLocalExtrema": true,
+        // which field name in your data represents the latitude - default "lat"
+        latField: 'lat',
+        // which field name in your data represents the longitude - default "lng"
+        lngField: 'lng',
+        // which field name in your data represents the data value - default "value"
+        valueField: 'count'
+      };
+
+
+      const heatmapLayer = new HeatmapOverlay(cfg);
+      
+      
+      const map = new L.Map('map-canvas', {
+        center: new L.LatLng(30.516829, 76.659737),
+        zoom: 16,
+        layers: [baseLayer, heatmapLayer]
+      });
+
+      heatmapLayer.setData(testData);
+      const btns = document.querySelectorAll('.symbol');
+      for (const i = 0; i < btns.length; i++) {
+        btns[i].onclick = function () {
+          ga('send', 'event', 'social', 'share');
+        };
+      }
+    };
+  </script>
+
+</body>
+
+</html>
